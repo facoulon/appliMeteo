@@ -3,6 +3,7 @@ jQuery(document).ready(function($) {
     var mymap = L.map('mapid').setView([46.52863469527167, 2.43896484375], 7);
 
     var chefLieu = []
+    var heatColor="";
 
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
         maxZoom: 18,
@@ -22,24 +23,31 @@ jQuery(document).ready(function($) {
                 var geoshapeCoor = fieldList.geo_shape;
                 chefLieu.push(fieldList.nom_chf);
 
-                L.geoJSON(geoshapeCoor).addTo(mymap);
 
                 $.get({
-                    url: 'http://api.openweathermap.org/data/2.5/weather?q=' + chefLieu[i] + ',fr&APPID=6d2f216decbe34283f3ca5f9de28ddf0',
-                    dataType: 'json';
+                    url: 'http://api.openweathermap.org/data/2.5/weather?q=' + chefLieu[i] + ',fr&APPID=6d2f216decbe34283f3ca5f9de28ddf0&units=metric',
+                    dataType: 'json',
                     success: function(weather_json, statut) {
-                        var x = weather_json.coord.lat;
-                        var y = weather_json.coord.lon;
-                        var markerLocation = new L.LatLng(x, y);
+                        // var x = weather_json.coord.lat;
+                        // var y = weather_json.coord.lon;
+                        var markerLocation = new L.LatLng(weather_json.coord.lat, weather_json.coord.lon);
                         var marker = new L.Marker(markerLocation);
                         mymap.addLayer(marker)
-                        // L.marker([x, y]).addTo(mymap);
                         var iconId = weather_json.weather[0].icon;
                         console.log(iconId);
                         marker.bindPopup('<b>' + weather_json.name + '</b> <img src="http://openweathermap.org/img/w/' + iconId + '.png">');
-
+                        if (weather_json.main.temp < 10) {
+                            heatColor="blue"
+                        } else if (weather_json.main.temp > 10 && weather_json.main.temp < 20 ) {
+                          heatColor="orange"
+                        } else if (weather_json.main.temp > 20) {
+                          heatColor="red"
+                        }
+                        console.log(heatColor);
                     },
                 });
+                    L.geoJSON(geoshapeCoor).addTo(mymap);
+
             }
 
         },
